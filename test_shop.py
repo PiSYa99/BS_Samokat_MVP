@@ -2,7 +2,8 @@
 import csv
 import io
 import tempfile
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+from time import monotonic
 from zipfile import ZipFile
 import unittest
 from pathlib import Path
@@ -24,10 +25,10 @@ class ShopTest(unittest.TestCase):
         self.addCleanup(path.stop)
         # The trained predictor uses weekday and order time when sizing baskets.
         # Keep the seed history reproducible for tests with minimum page counts.
-        clock = patch.object(store, "now", return_value=datetime(2026, 11, 22, 12, tzinfo=timezone.utc))
-        if self._testMethodName == "test_multiple_refreshes_never_repeat_a_composition":
-            clock.start()
-            self.addCleanup(clock.stop)
+        anchor = datetime(2026, 11, 22, 12, tzinfo=timezone.utc)
+        started = monotonic()
+        self.enterContext(patch.object(store, "now", side_effect=lambda:
+            anchor + timedelta(seconds=monotonic() - started)))
         store.initialize()
 
     def start(self, uid="katya", mode="personal"):
