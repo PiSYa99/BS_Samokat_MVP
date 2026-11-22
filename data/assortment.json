@@ -1,0 +1,189 @@
+[
+  {
+    "id": "ax-2053555ce80ab005",
+    "image": "syrniki",
+    "category": "Завтраки",
+    "old_price": null,
+    "new": false
+  },
+  {
+    "id": "ax-06491e8110dffddd",
+    "image": "milk",
+    "category": "Молочное",
+    "old_price": null,
+    "new": false
+  },
+  {
+    "id": "iz-ekvadora-banany-4-sht-400-900-g",
+    "image": "banana",
+    "category": "Овощи и фрукты",
+    "old_price": null,
+    "new": false
+  },
+  {
+    "id": "ax-07830bc33eee353f",
+    "image": "coffee",
+    "category": "Напитки",
+    "old_price": null,
+    "new": false,
+    "illustrative_photo": true
+  },
+  {
+    "id": "ax-622376dbf71091f5",
+    "image": "croissant",
+    "category": "Выпечка",
+    "old_price": 129,
+    "new": false
+  },
+  {
+    "id": "ax-33bd43ae29341205",
+    "image": "yogurt",
+    "category": "Молочное",
+    "old_price": null,
+    "new": false
+  },
+  {
+    "id": "sendvich-subjoy-ostryy-italyanskiy-220-g",
+    "image": "sandwich",
+    "category": "Готовая еда",
+    "old_price": null,
+    "new": true
+  },
+  {
+    "id": "ax-de8f010aa037a9d2",
+    "image": "pizza",
+    "category": "Готовая еда",
+    "old_price": 499,
+    "new": false
+  },
+  {
+    "id": "ax-1416b14c0e7444f4",
+    "image": "noodles",
+    "category": "Бакалея",
+    "old_price": 58,
+    "new": false
+  },
+  {
+    "id": "chipsy-lay-s-syr-140-g",
+    "image": "chips",
+    "category": "Перекусы",
+    "old_price": null,
+    "new": false
+  },
+  {
+    "id": "kola-samokat-bez-sakhara-s-gazom-2-l",
+    "image": "cola",
+    "category": "Напитки",
+    "old_price": 147,
+    "new": false,
+    "illustrative_photo": true
+  },
+  {
+    "id": "ax-2e7f19641a426b25",
+    "image": "juice",
+    "category": "Напитки",
+    "old_price": null,
+    "new": false
+  },
+  {
+    "id": "popkorn-holy-corn-dlya-svch-nezhnyy-syr-70-g",
+    "image": "popcorn",
+    "category": "Перекусы",
+    "old_price": 124,
+    "new": false
+  },
+  {
+    "id": "kasha-molochnaya-samokat-ovsyanaya-tselnozernovaya-250-g",
+    "image": "porridge",
+    "category": "Завтраки",
+    "old_price": null,
+    "new": false
+  },
+  {
+    "id": "yabloki-golden-500-g",
+    "image": "apples",
+    "category": "Овощи и фрукты",
+    "old_price": 159,
+    "new": false
+  },
+  {
+    "id": "smes-orekhov-semushka-solyonaya-s-pekanom-50-g",
+    "image": "nuts",
+    "category": "Перекусы",
+    "old_price": null,
+    "new": false,
+    "illustrative_photo": true
+  },
+  {
+    "id": "ax-eee364ab91d62663",
+    "image": "eggs",
+    "category": "Завтраки",
+    "old_price": null,
+    "new": false
+  },
+  {
+    "id": "baton-cheryomushki-nareznoy-narezka-400-g",
+    "image": "bread",
+    "category": "Выпечка",
+    "old_price": null,
+    "new": false
+  },
+  {
+    "id": "shokoladnyy-batonchik-snickers-super-80-g",
+    "image": "snickers",
+    "category": "Перекусы",
+    "old_price": 110,
+    "new": false
+  },
+  {
+    "id": "kartofel-zhniva-otbornyy-mytyy-2-5-kg",
+    "image": "potatoes",
+    "category": "Овощи и фрукты",
+    "old_price": 249,
+    "new": false
+  },
+  {
+    "id": "ax-549bcb0a99b6c147",
+    "image": "cream",
+    "category": "Молочное",
+    "old_price": null,
+    "new": false
+  },
+  {
+    "id": "ax-1467e2d86b567533",
+    "image": "salmon",
+    "category": "Рыба",
+    "old_price": null,
+    "new": false,
+    "illustrative_photo": true
+  },
+  {
+    "id": "salatnyy-miks-belaya-dacha-toskana-frisse-romano-radichcho-140-g",
+    "image": "greens",
+    "category": "Овощи и фрукты",
+    "old_price": null,
+    "new": false
+  },
+  {
+    "id": "ax-5118a203d597a8c1",
+    "image": "salt",
+    "category": "Бакалея",
+    "old_price": 139,
+    "new": false
+  },
+  {
+    "id": "morkov-1-kg",
+    "image": "carrot",
+    "illustrative_photo": true
+  },
+  {
+    "id": "ogurtsy-ivanisovo-lyuks-korotkoplodnye-450-g",
+    "image": "cucumber",
+    "illustrative_photo": true
+  },
+  {
+    "id": "krasnye-tomaty-eko-kultura-provans-kruglye-na-vetke-450-g",
+    "image": "tomato",
+    "illustrative_photo": true
+  }
+]

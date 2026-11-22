@@ -1,0 +1,8 @@
+{
+  "size_mode": "mean_all",
+  "price_weight": 0.25,
+  "variety_weight": 0.35,
+  "price_priority": 1.2,
+  "spend_uplift": 0.25,
+  "periodic_orders": true
+}

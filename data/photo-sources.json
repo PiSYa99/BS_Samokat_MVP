@@ -1,0 +1,190 @@
+[
+  {
+    "file": "web/assets/apples.jpg",
+    "source": "Bakkali",
+    "page": "https://bakkali.app/products/yellow-apple-500g",
+    "image_url": "https://bakkali.app/cdn/shop/products/YellowApple500g.jpg?v=1683732157&width=1214",
+    "sku": "yabloki-golden-500-g"
+  },
+  {
+    "file": "web/assets/banana.jpg",
+    "source": "ВкусВилл",
+    "page": "https://vkusvill.ru/goods/banany-127831/",
+    "image_url": "https://img.vkusvill.ru/pim/images/site/site_LargeWebP/5ce0bced-dbf3-4969-b7e0-edb6a00e8b2c.webp?1792641370?22_11_2026_22_32_26",
+    "sku": "iz-ekvadora-banany-4-sht-400-900-g"
+  },
+  {
+    "file": "web/assets/bread.jpg",
+    "source": "METRO",
+    "page": "https://online.metro-cc.ru/products/baton-nareznoj-vysshij-sort-v-narezke-400-g",
+    "image_url": "https://cdn.metro-cc.ru/ru/ru_pim_302263001001_01.png",
+    "sku": "baton-cheryomushki-nareznoy-narezka-400-g"
+  },
+  {
+    "file": "web/assets/breakfast.jpg",
+    "source": "Svitlana Shakalova / Pexels",
+    "page": "https://www.pexels.com/photo/cozy-breakfast-with-fresh-croissant-and-coffee-35135152/",
+    "image_url": "https://images.pexels.com/photos/35135152/pexels-photo-35135152.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  },
+  {
+    "file": "web/assets/chips.jpg",
+    "source": "Яндекс Лавка",
+    "page": "https://lavka.yandex.kz/good/chipsy-lays-syr-140-gram",
+    "image_url": "https://yastatic.net/avatars/get-grocery-goods/2783132/21b1cf75-05c6-475c-8ca8-6635bd3eb8d0/500x500-orig",
+    "sku": "chipsy-lay-s-syr-140-g"
+  },
+  {
+    "file": "web/assets/coffee.jpg",
+    "source": "Public Domain Pictures",
+    "page": "https://www.publicdomainpictures.net/en/view-image.php?image=68913&picture=grounds-coffee",
+    "image_url": "https://www.publicdomainpictures.net/pictures/70000/velka/grounds-coffee.jpg",
+    "sku": "ax-07830bc33eee353f",
+    "note": "Молотый кофе без упаковки."
+  },
+  {
+    "file": "web/assets/cola.jpg",
+    "source": "Т—Ж",
+    "page": "https://t-j.ru/cola-for-all/",
+    "image_url": "https://opis-cdn.tinkoffjournal.ru/mercury/cola-for-all-9.id5innhy6gsq..jpg",
+    "sku": "kola-samokat-bez-sakhara-s-gazom-2-l",
+    "note": "Та же марка и объём. На снимке классическая кола."
+  },
+  {
+    "sku": "ax-549bcb0a99b6c147",
+    "file": "web/assets/cream.jpg",
+    "source": "ProStore",
+    "page": "https://product-store.ru/catalog_item/slivki_domik_v_derevne_20-_475_ml/",
+    "image_url": "https://product-store.ru/upload/iblock/267/f73a4df3-dd9c-11df-af30-002215247da1_fb6bf821-e0c1-11df-aa59-001e8c6215cb.jpeg"
+  },
+  {
+    "file": "web/assets/croissant.jpg",
+    "source": "Купер / Самокат",
+    "page": "https://kuper.ru/samokat/kruassan-samokat-na-masle-50-g",
+    "image_url": "https://imgproxy.kuper.ru/imgproxy/size-500-500/czM6Ly9zYi1vYnMtcHJvZC1jb250ZW50LWltYWdlczAxL3Byb2R1Y3RzLzUxNDUxNjkyL29yaWdpbmFsLzEvMjAyNi0wNC0yMyUyMDExJTNBMzglM0ExNi42Njg3NjYlMkIwMCUzQTAwLzUxNDUxNjkyXzEuanBn.jpg",
+    "sku": "ax-622376dbf71091f5"
+  },
+  {
+    "file": "web/assets/eggs.jpg",
+    "source": "Самокат, ПромоСтраницы",
+    "page": "https://samokat.promo.page/media/liubiteliam-sporta-4-produkta-s-vysokim-soderjaniem-belka-67efda8aee1feb7d10e0cbc2_0_0",
+    "image_url": "https://avatars.mds.yandex.net/get-promoarticles/5485055/pub_67efda8aee1feb7d10e0cbc2_67efdc27b9c9d651fc326afb/scale_1200",
+    "sku": "ax-eee364ab91d62663"
+  },
+  {
+    "file": "web/assets/juice.jpg",
+    "source": "Аква-Лайф",
+    "page": "https://aqua-life.spb.ru/Tovary_v_dom_office/Voda_pitevaya/sok-J7-Fresh-taste-apelsin-850/",
+    "image_url": "https://aqua-life.spb.ru/foto/110440222072020.jpg",
+    "sku": "ax-2e7f19641a426b25"
+  },
+  {
+    "file": "web/assets/milk.jpg",
+    "source": "Купер / Самокат",
+    "page": "https://kuper.ru/samokat/moloko-3-2-ul-trapasterizovannoe-1-l-samokat-4d83455",
+    "image_url": "https://imgproxy.kuper.ru/imgproxy/size-500-500/czM6Ly9zYi1vYnMtcHJvZC1jb250ZW50LWltYWdlczAxL3Byb2R1Y3RzLzQ4NTM0NDE5L29yaWdpbmFsLzEvMjAyNi0wNC0yOCUyMDE4JTNBMTglM0EwMC41NDc4MjUlMkIwMCUzQTAwLzQ4NTM0NDE5XzEuanBn.jpg",
+    "sku": "ax-06491e8110dffddd"
+  },
+  {
+    "sku": "ax-1416b14c0e7444f4",
+    "file": "web/assets/noodles.jpg",
+    "source": "Роллтон",
+    "page": "https://rollton.ru/product/lapsha-s-kuriczej-goryachaya-porcziya/",
+    "image_url": "https://rollton.ru/wp-content/uploads/2022/01/izobrazhenie-10.png"
+  },
+  {
+    "file": "web/assets/nuts.jpg",
+    "source": "Flip",
+    "page": "https://www.flip.kz/catalog?prod=1418866",
+    "image_url": "https://s.f.kz/prod/1419/1418866_1000.jpg",
+    "sku": "smes-orekhov-semushka-solyonaya-s-pekanom-50-g",
+    "note": "Другая фасовка и вариант смеси той же марки."
+  },
+  {
+    "file": "web/assets/pizza.jpg",
+    "source": "Cashbe",
+    "page": "https://www.cashbe.ru/market/category/pitstsa/brand-samokat/",
+    "image_url": "https://cdnvitrina.ru/uploads/product-images/794/9744/pitstsa-samokat-pepperoni-zamorozhennaya-360-g-2564533069.jpg",
+    "sku": "ax-de8f010aa037a9d2"
+  },
+  {
+    "file": "web/assets/popcorn.jpg",
+    "source": "METRO",
+    "page": "https://online.metro-cc.ru/products/70g-popkorn-mikrovolnovyy-holy-corn-nezhnyy-syr",
+    "image_url": "https://cdn.metro-cc.ru/ru/ru_pim_210355001001_01.png",
+    "sku": "popkorn-holy-corn-dlya-svch-nezhnyy-syr-70-g"
+  },
+  {
+    "file": "web/assets/porridge.jpg",
+    "source": "FoodsPrice",
+    "page": "https://foodsprice.ru/product/565581",
+    "image_url": "http://foodsprice.ru/icache/product/428/4281055_250x170.jpg",
+    "sku": "kasha-molochnaya-samokat-ovsyanaya-tselnozernovaya-250-g"
+  },
+  {
+    "file": "web/assets/salmon.jpg",
+    "source": "Олимп Фиш",
+    "page": "https://olimp-fish.ru/product/forel-slabosolenaja-kusok-v-u/",
+    "image_url": "https://olimp-fish.ru/wp-content/uploads/2020/04/77777777-e1781010036140.jpg",
+    "sku": "ax-1467e2d86b567533",
+    "note": "Фотография слабосолёной форели другого производителя."
+  },
+  {
+    "file": "web/assets/salt.jpg",
+    "source": "Купер / Самокат",
+    "page": "https://kuper.ru/samokat/sol-pripravlennaya-samokat-srednyaya-270-g",
+    "image_url": "https://imgproxy.kuper.ru/imgproxy/size-500-500/czM6Ly9zYi1vYnMtcHJvZC1jb250ZW50LWltYWdlczAxL3Byb2R1Y3RzLzQ2MjY2NzI2L29yaWdpbmFsLzEvMjAyNi0xMC0wOCUyMDE3JTNBNTklM0EwNi43NjgxMDglMkIwMCUzQTAwLzQ2MjY2NzI2XzEuanBn.jpg",
+    "sku": "ax-5118a203d597a8c1"
+  },
+  {
+    "sku": "sendvich-subjoy-ostryy-italyanskiy-220-g",
+    "file": "web/assets/sandwich.jpg",
+    "source": "Subjoy",
+    "page": "https://subjoy.ru/menu/sendvichi/ostryy-italyanskiy/",
+    "image_url": "https://subjoy.ru/upload/iblock/3fd/v3csl8dmy1xwphifdvewmoj1qswg7b76.png"
+  },
+  {
+    "file": "web/assets/snickers.jpg",
+    "source": "Бариста",
+    "page": "https://www.barista-ltd.ru/magazin/snickers-super-80g.html",
+    "image_url": "https://www.barista-ltd.ru/components/com_jshopping/files/img_products/Snickers_super_80g.jpg",
+    "sku": "shokoladnyy-batonchik-snickers-super-80-g"
+  },
+  {
+    "sku": "ax-2053555ce80ab005",
+    "file": "web/assets/syrniki.jpg",
+    "source": "Creative Kitchen",
+    "page": "https://creative-kitchen.pro/product/syrniki-s-vishnevoj-nachinkoj/",
+    "image_url": "https://creative-kitchen.pro/wp-content/uploads/2025/04/syrniki-s-vishnej-bu.jpg"
+  },
+  {
+    "file": "web/assets/yogurt.jpg",
+    "source": "Купер / Самокат",
+    "page": "https://kuper.ru/samokat/yogurt-samokat-termostatnyy-ezhevika-1-5-bzmzh-250-g-f87234d",
+    "image_url": "https://imgproxy.kuper.ru/imgproxy/size-500-500/czM6Ly9zYi1vYnMtcHJvZC1jb250ZW50LWltYWdlczAxL3Byb2R1Y3RzLzQ3MzQ3ODAzL29yaWdpbmFsLzEvMjAyNi0xMC0wOCUyMDE3JTNBNTglM0EyNi45NDgxNjElMkIwMCUzQTAwLzQ3MzQ3ODAzXzEuanBn.jpg",
+    "sku": "ax-33bd43ae29341205"
+  },
+  {
+    "file": "web/assets/carrot.jpg",
+    "sku": "morkov-1-kg",
+    "source": "Apeti",
+    "page": "https://apeti.ru/product/morkov_mytaya_1_kg.html",
+    "image_url": "https://apeti.ru/upload/iblock/c1a/qfag6gx3yqy7icshmqcaa4rdeyl4tete/morkov_mytaya.png",
+    "note": "Иллюстративная фотография овоща без упаковки."
+  },
+  {
+    "file": "web/assets/cucumber.jpg",
+    "sku": "ogurtsy-ivanisovo-lyuks-korotkoplodnye-450-g",
+    "source": "Яндекс Лавка",
+    "page": "https://lavka.yandex.ru/catalog/grocery/category/ovoshchi_griby_i_zelen/ogurcy",
+    "image_url": "https://yastatic.net/avatars/get-grocery-goods/2998515/d057e5c1-d18f-4ac1-baed-d6a152ce1260/600x600?webp=true",
+    "note": "Иллюстративная фотография овоща без упаковки."
+  },
+  {
+    "file": "web/assets/tomato.jpg",
+    "sku": "krasnye-tomaty-eko-kultura-provans-kruglye-na-vetke-450-g",
+    "source": "VARUS",
+    "page": "https://varus.ua/pomidor-gilka-pan-ovoch-fasovaniy-600g-sht",
+    "image_url": "https://varus.ua/img/product/1140/1140/2561733",
+    "note": "Иллюстративная фотография овоща без упаковки."
+  }
+]
