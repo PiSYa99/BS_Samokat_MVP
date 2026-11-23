@@ -131,7 +131,7 @@ async def shop_error(request, exc):
 @app.get("/", response_class=HTMLResponse)
 def homepage():
     return (store.ROOT / "docs/index.html").read_text().replace(
-        '<script defer src="pages-client.js"></script>', ''
+        '<script defer src="pages-client.js?v=pairs-3"></script>', ''
     )
 
 

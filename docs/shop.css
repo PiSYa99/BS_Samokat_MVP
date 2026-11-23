@@ -193,3 +193,7 @@ dialog { max-width: min(calc(var(--shop-width) - 20px),96vw); }
   #shop[data-route="products"] .chip { white-space: normal; text-align: left; }
   #results { grid-column: 2; grid-row: 3; min-width: 0; padding-top: 20px; }
 }
+
+@media (max-width: 767px) {
+  .bundles.rail { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+}

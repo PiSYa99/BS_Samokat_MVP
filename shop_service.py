@@ -103,7 +103,7 @@ def recommendation_page(sid, advance_from=None):
         uid = s["user_id"]
         orders = store.history(db, uid)
         latest_order = orders[0]["order_id"] if orders else ""
-        latest = f"pairs-v2/{latest_order}"
+        latest = f"pairs-v3/{latest_order}"
         saved = db.execute("SELECT * FROM recommendation_pages WHERE session_id=?", (sid,)).fetchone()
         if saved and saved["latest_order"] == latest:
             pages = json.loads(saved["pages"])
@@ -117,6 +117,14 @@ def recommendation_page(sid, advance_from=None):
         if advance_from == f"{latest}/{position}" and position + 1 < len(pages):
             position += 1
             db.execute("UPDATE recommendation_pages SET position=? WHERE session_id=?", (position,sid))
+        # Keep one full page ahead, including when reopening an exhausted session.
+        if position == len(pages) - 1 and len(pages[position]) == 2:
+            shown = {sku for page in pages for bundle in page for sku in bundle["items"]}
+            next_pair = store.generate(uid, orders, shown)
+            if len(next_pair) == 2:
+                pages.append(next_pair)
+                db.execute("UPDATE recommendation_pages SET pages=? WHERE session_id=?",
+                           (store.pack(pages), sid))
         bundles = pages[position]
         register_offers(db, uid, bundles)
         return dict(bundles=bundles, version=f"{latest}/{position}", has_more=position+1 < len(pages))
