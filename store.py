@@ -146,6 +146,9 @@ THEMES = {
 }
 
 
+MIN_BUNDLE_PRODUCTS = 3
+
+
 def bundle_name(items, taken):
     tags = Counter(PRODUCTS[sku]["image"] for sku in items)
     scores = {name: sum(tags[k] for k in keys.split()) for name, keys in THEMES.items()}
@@ -155,7 +158,10 @@ def bundle_name(items, taken):
     alternatives = {"К завтраку": "Для неспешного утра", "На обед": "В обеденный перерыв",
                     "К кино": "На вечер с фильмом", "На быстрый перекус": "Перекус с собой",
                     "Для домашнего ужина": "К ужину дома"}
-    return alternatives[best] if scores[best] else "Из ваших покупок"
+    if scores[best]:
+        return alternatives[best]
+    groups = list(dict.fromkeys(PRODUCTS[sku]["group"] or PRODUCTS[sku]["category"] for sku in items))
+    return " и ".join([groups[0], *(group.lower() for group in groups[1:2])])
 
 
 def model_orders(rows):
@@ -169,14 +175,22 @@ def model_orders(rows):
 
 
 def predict_bundle(uid, rows, available, at, names):
-    if not available:
+    if len(available) < MIN_BUNDLE_PRODUCTS:
         return None
-    prediction = recommend(ENGINE, CATALOG, rows, uid, at, "Europe/Moscow", allowed=available)
-    if not prediction or not prediction["items"]:
-        return None
-    items = {r["product_id"]: r["quantity"] for r in prediction["items"]}
-    if not items.keys() <= available:
-        raise RuntimeError("Модель вернула SKU за пределами витрины")
+    remaining = available
+    items = {}
+    while len(items) < MIN_BUNDLE_PRODUCTS:
+        prediction = recommend(ENGINE, CATALOG, rows, uid, at, "Europe/Moscow", allowed=remaining)
+        if not prediction or not prediction["items"]:
+            return None
+        selected = {r["product_id"]: r["quantity"] for r in prediction["items"]}
+        if not selected.keys() <= remaining:
+            raise RuntimeError("Модель вернула SKU за пределами витрины")
+        if items:
+            # Keep the model's ranking and pack counts when completing a short prediction.
+            selected = dict(list(selected.items())[:MIN_BUNDLE_PRODUCTS - len(items)])
+        items.update(selected)
+        remaining = remaining.difference(selected)
     name = bundle_name(items, names)
     key = hashlib.sha256(pack([uid, name, items]).encode()).hexdigest()[:24]
     return dict(id=key, name=name, items=items, total=total(items),
@@ -196,7 +210,7 @@ def predict_pair(uid, rows, at, excluded=()):
             break
         result.append(bundle)
         available.difference_update(bundle["items"])
-    return result
+    return result if len(result) == 2 else []
 
 
 def build_pages(uid, rows):

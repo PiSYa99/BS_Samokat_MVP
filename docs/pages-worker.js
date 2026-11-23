@@ -26,7 +26,7 @@ function snapshot(db, data) {
 async function start() {
   const indexURL = new URL("python/", self.location.href).href;
   const [py, db, response] = await Promise.all([
-    loadPyodide({indexURL}), openStorage(), fetch("shop-engine.zip?v=pairs-3", {cache:"no-cache"})
+    loadPyodide({indexURL}), openStorage(), fetch("shop-engine.zip?v=pairs-4", {cache:"no-cache"})
   ]);
   if (!response.ok) throw new Error("Не удалось загрузить модель");
   await py.loadPackage(["sqlite3", "tzdata"]);

@@ -117,6 +117,7 @@ class ShopTest(unittest.TestCase):
                     for bundle in (left, right):
                         self.assertEqual(bundle["total"], store.total(bundle["items"]))
                     for bundle in page["bundles"]:
+                        self.assertGreaterEqual(len(bundle["items"]), 3)
                         composition = frozenset(bundle["items"])
                         self.assertNotIn(composition, seen)
                         seen.add(composition)
