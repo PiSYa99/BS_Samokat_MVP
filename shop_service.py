@@ -102,7 +102,8 @@ def recommendation_page(sid, advance_from=None):
             return dict(bundles=[], version="", has_more=False)
         uid = s["user_id"]
         orders = store.history(db, uid)
-        latest = orders[0]["order_id"] if orders else ""
+        latest_order = orders[0]["order_id"] if orders else ""
+        latest = f"pairs-v2/{latest_order}"
         saved = db.execute("SELECT * FROM recommendation_pages WHERE session_id=?", (sid,)).fetchone()
         if saved and saved["latest_order"] == latest:
             pages = json.loads(saved["pages"])

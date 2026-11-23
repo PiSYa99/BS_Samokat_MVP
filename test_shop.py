@@ -111,6 +111,11 @@ class ShopTest(unittest.TestCase):
                 count = 0
                 while True:
                     count += 1
+                    self.assertEqual(len(page["bundles"]), 2)
+                    left, right = page["bundles"]
+                    self.assertTrue(left["items"].keys().isdisjoint(right["items"]))
+                    for bundle in (left, right):
+                        self.assertEqual(bundle["total"], store.total(bundle["items"]))
                     for bundle in page["bundles"]:
                         composition = frozenset(bundle["items"])
                         self.assertNotIn(composition, seen)

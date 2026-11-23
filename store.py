@@ -184,8 +184,10 @@ def predict_bundle(uid, rows, available, at, names):
 
 
 def generate(uid, rows, excluded=()):
-    at = now().isoformat()
-    rows = model_orders(rows)
+    return predict_pair(uid, model_orders(rows), now().isoformat(), excluded)
+
+
+def predict_pair(uid, rows, at, excluded=()):
     result = []
     available = set(CATALOG).difference(excluded)
     for _ in range(2):
@@ -198,14 +200,14 @@ def generate(uid, rows, excluded=()):
 
 
 def build_pages(uid, rows):
-    first = generate(uid, rows)
+    rows = model_orders(rows)
+    at = now().isoformat()
+    first = predict_pair(uid, rows, at)
     pages = [first]
     if not first:
         return pages
-    rows = model_orders(rows)
     seen = {frozenset(b["items"]) for b in first}
     candidates = []
-    at = now().isoformat()
     # The same predictor selects items and quantities in each shelf. Removing
     # one of its choices at a time yields its next-best alternatives.
     for tags in THEMES.values():
@@ -228,31 +230,43 @@ def build_pages(uid, rows):
                         visited.add(subset)
                         queue.append(subset)
 
-    # Prefer familiar products initially, then spread exposure across products.
-    # Compositions are removed from the pool as they are dealt.
+    # Broader alternatives keep a narrow theme from forcing very small baskets.
+    excluded = set()
+    for _ in range(10):
+        pair = predict_pair(uid, rows, at, excluded)
+        if not pair:
+            break
+        for bundle in pair:
+            contents = frozenset(bundle["items"])
+            excluded.update(contents)
+            if contents not in seen:
+                candidates.append((contents, bundle))
+                seen.add(contents)
+
+    typical_order = sum(order["total_rub"] for order in rows) / len(rows)
     purchases = Counter(sku for order in rows for sku in order["items"])
     exposure = Counter(sku for b in first for sku in b["items"])
-    while candidates:
-        previous = {sku for b in pages[-1] for sku in b["items"]}
-        page = []
-        selected = set()
-        names = set()
-        for _ in range(2):
-            def priority(candidate):
-                items, bundle = candidate
-                return (len(items & selected), len(items & previous), bundle["name"] in names,
-                        sum(exposure[s] for s in items) / len(items),
-                        -sum(purchases[s] for s in items) / len(items))
-            choice = min(candidates, key=priority)
-            items, bundle = choice
-            if selected.intersection(items):
+    while len(candidates) >= 2:
+        previous = {sku for bundle in pages[-1] for sku in bundle["items"]}
+
+        def priority(candidate):
+            items, bundle = candidate
+            distance = abs(bundle["total"] - typical_order)
+            return (distance > typical_order * 0.25,
+                    len(items & previous), sum(exposure[s] for s in items) / len(items),
+                    -sum(purchases[s] for s in items) / len(items), distance)
+
+        ranked = sorted(candidates, key=priority)
+        for index, left in enumerate(ranked):
+            right = next((other for other in ranked[index + 1:]
+                          if left[0].isdisjoint(other[0])), None)
+            if right is not None:
                 break
-            candidates.remove(choice)
-            page.append(bundle)
-            selected.update(items)
-            names.add(bundle["name"])
-            if not candidates:
-                break
-        pages.append(page)
-        exposure.update(selected)
+        else:
+            break
+
+        for candidate in (left, right):
+            candidates.remove(candidate)
+            exposure.update(candidate[0])
+        pages.append([left[1], right[1]])
     return pages
