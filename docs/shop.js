@@ -138,7 +138,7 @@ function home() {
   const deals = products.filter(p => p.old_price > p.price);
   const links=[["catalog","catalog","Каталог"],["discount","percent","Скидки"],["new","new","Что нового"],["profile","repeat","Заказывали"],["favorites","heart","Сохранёнки"]];
   const hero = '<section class="storefront"><div class="storefront-top">'+
-    '<div><strong>Днепропетровская, 39</strong><small>Доставка от 15 минут</small></div>'+
+    '<div><strong>Гашека, 7</strong><small>Доставка от 15 минут</small></div>'+
     labeled("profile","Профиль · "+current().name,svg("user"),"hero-profile")+
     '</div><h1>'+button("filter","Что взять к завтраку? "+svg("chevron"),"story-link","К завтраку")+'</h1></section>';
   const shortcuts = '<nav class="shortcuts" aria-label="Разделы магазина">'+links.map(([a,i,t]) =>
