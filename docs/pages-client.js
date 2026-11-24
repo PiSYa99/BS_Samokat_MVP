@@ -1,6 +1,6 @@
 "use strict";
 (() => {
-  const worker = new Worker("pages-worker.js?v=year-1");
+  const worker = new Worker("pages-worker.js?v=meals-1");
   const pending = new Map();
   let nextId = 0;
   let failure;

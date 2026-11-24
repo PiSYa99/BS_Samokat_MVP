@@ -1,4 +1,5 @@
 """Regression checks for the v4 adapter, persistent cart and experiment log."""
+from itertools import permutations
 import csv
 import io
 import tempfile
@@ -144,6 +145,11 @@ class ShopTest(unittest.TestCase):
                         self.assertEqual(bundle["total"], store.total(bundle["items"]))
                     for bundle in page["bundles"]:
                         self.assertGreaterEqual(len(bundle["items"]), 3)
+                        slots = store.MEALS[bundle["name"]]
+                        self.assertEqual(len(slots), len(bundle["items"]))
+                        self.assertTrue(any(all(role in store.meal_roles(sku)
+                                                for role, sku in zip(slots, order))
+                                            for order in permutations(bundle["items"])))
                         composition = frozenset(bundle["items"])
                         self.assertNotIn(composition, seen)
                         seen.add(composition)
