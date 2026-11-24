@@ -1,4 +1,6 @@
 """Local shop data and the adapter to the supplied v4 predictor."""
+from demo_history import annual_orders
+
 import csv
 import hashlib
 import io
@@ -6,16 +8,20 @@ import json
 import os
 import sqlite3
 import sys
-from collections import Counter, deque
+from collections import Counter, defaultdict
+from itertools import combinations, product
+from math import log1p
+from zoneinfo import ZoneInfo
 from contextlib import contextmanager
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from zipfile import ZipFile
 
 ROOT = Path(__file__).resolve().parent
 MODEL = ROOT / "ml_v4"
 sys.path.insert(0, str(MODEL))
-from adapter_example import build_engine, read_dataset, recommend
+from adapter_example import build_engine, read_dataset
+from basket import History, Order
 
 CATALOG, _ = read_dataset(MODEL / "catalog.zip", include_orders=False)
 ENGINE = build_engine(MODEL, CATALOG)
@@ -110,14 +116,24 @@ def initialize():
                 db.execute(statement)
         db.executemany("INSERT OR REPLACE INTO products VALUES (?,?,?)",
                        [(p["id"], p["name"], p["price"]) for p in PRODUCTS.values()])
+        if db.execute("PRAGMA user_version").fetchone()[0] >= 1:
+            return
+        end = now()
         for user in PROFILES:
-            if db.execute("SELECT 1 FROM users WHERE id=?", (user["id"],)).fetchone():
-                continue
-            db.execute("INSERT INTO users VALUES (?,?,?,?)",
+            uid = user["id"]
+            db.execute("INSERT OR IGNORE INTO users VALUES (?,?,?,?)",
                        tuple(user[k] for k in ("id", "name", "occupation", "habit")))
-            for i, items in enumerate(user["orders"]):
-                at = now() - timedelta(days=(len(user["orders"])-i)*2, hours=i%3)
-                save_order(db, f'{user["id"]}-{i+1:02d}', user["id"], at, items, None)
+            db.executemany("DELETE FROM orders WHERE id=? AND user_id=? AND session_id IS NULL",
+                           [(f"{uid}-{i:02d}", uid) for i in range(1, 11)])
+            for at, items in annual_orders(uid, end, PRODUCTS, CATALOG):
+                save_order(db, f"{uid}-year-{at.date()}", uid, at, items, None)
+        db.execute("DELETE FROM recommendation_pages")
+        db.execute("PRAGMA user_version=1")
+
+
+def needs_history_update():
+    with database() as db:
+        return db.execute("PRAGMA user_version").fetchone()[0] < 1
 
 
 def total(items):
@@ -137,31 +153,56 @@ def history(db, uid):
                  prices=json.loads(r["prices"]), demo_seed=r["session_id"] is None) for r in rows]
 
 
-THEMES = {
-    "К завтраку": "milk syrniki yogurt porridge banana eggs croissant apples",
-    "На обед": "sandwich pizza greens coffee bread salmon",
-    "К кино": "cola chips popcorn pizza snickers nuts",
-    "На быстрый перекус": "noodles sandwich nuts juice snickers banana",
-    "Для домашнего ужина": "potatoes salmon salt cream greens eggs bread",
+# Each slot describes a different use in a meal. Product IDs and profiles are
+# deliberately absent: the shopper's own orders supply the candidate products.
+MEALS = {
+    "Каша с молоком и фруктами": ("cereal", "milk", "fruit"),
+    "К семейному завтраку": ("bread", "eggs", "dairy"),
+    "На завтрак с фруктами": ("breakfast", "dairy", "fruit"),
+    "Для домашнего ужина": ("protein", "starch", "vegetable"),
+    "Рыба с яйцом и зеленью": ("fish", "eggs", "vegetable"),
+    "На обед": ("lunch", "side", "drink"),
+    "На обед с выпечкой": ("lunch", "pastry", "drink"),
+    "К кино": ("pizza", "movie_snack", "cold_drink"),
+    "На быстрый перекус": ("quick_meal", "snack", "cold_drink"),
+}
+
+GROUP_ROLES = {
+    "Молоко коровье": ("milk", "dairy"), "Йогурт": ("dairy",), "Творог": ("dairy",),
+    "Хлеб": ("bread", "breakfast"), "Яйца куриные": ("eggs", "breakfast"),
+    "Овсяные хлопья": ("cereal", "breakfast"), "Готовые сырники": ("breakfast",),
+    "Яблоки": ("fruit",), "Бананы": ("fruit",), "Мандарины": ("fruit",),
+    "Куриное филе": ("protein",), "Сухие макароны": ("starch",), "Картофель": ("starch",),
+    "Огурцы": ("vegetable",), "Морковь": ("vegetable",), "Помидоры": ("vegetable",),
+    "Готовые супы": ("lunch",), "Готовая паста и лазанья": ("lunch",),
+    "Бургеры и сэндвичи": ("lunch",), "Готовые салаты": ("side",),
+    "Круассаны": ("pastry",), "Вода без газа": ("drink", "cold_drink"),
+    "Кола": ("cold_drink",), "Замороженная пицца": ("pizza",),
+    "Замороженные пельмени": ("quick_meal",),
 }
 
 
-MIN_BUNDLE_PRODUCTS = 3
-
-
-def bundle_name(items, taken):
-    tags = Counter(PRODUCTS[sku]["image"] for sku in items)
-    scores = {name: sum(tags[k] for k in keys.split()) for name, keys in THEMES.items()}
-    best = max(scores, key=scores.get)
-    if best not in taken and scores[best]:
-        return best
-    alternatives = {"К завтраку": "Для неспешного утра", "На обед": "В обеденный перерыв",
-                    "К кино": "На вечер с фильмом", "На быстрый перекус": "Перекус с собой",
-                    "Для домашнего ужина": "К ужину дома"}
-    if scores[best]:
-        return alternatives[best]
-    groups = list(dict.fromkeys(PRODUCTS[sku]["group"] or PRODUCTS[sku]["category"] for sku in items))
-    return " и ".join([groups[0], *(group.lower() for group in groups[1:2])])
+def meal_roles(sku):
+    item = PRODUCTS[sku]
+    name = item["name"].lower()
+    if "лапша" in name and "быстрого приготовления" in name:
+        return ("quick_meal",)
+    if "кофейный напиток" in name:
+        return ("drink",)
+    if "попкорн" in name:
+        return ("movie_snack",)
+    if "чипсы" in name:
+        return ("movie_snack", "snack")
+    if "шоколадный батончик" in name:
+        return ("snack",)
+    if "салатный микс" in name:
+        return ("vegetable",)
+    if "форель" in name or "лосось" in name:
+        if item["department"] == "Мясо и рыба":
+            return ("fish", "protein")
+    if item["group"] == "Готовые салаты" and ("смесь для" in name or "набор для" in name):
+        return ()
+    return GROUP_ROLES.get(item["group"], ())
 
 
 def model_orders(rows):
@@ -174,113 +215,88 @@ def model_orders(rows):
     return result
 
 
-def predict_bundle(uid, rows, available, at, names):
-    if len(available) < MIN_BUNDLE_PRODUCTS:
-        return None
-    remaining = available
-    items = {}
-    while len(items) < MIN_BUNDLE_PRODUCTS:
-        prediction = recommend(ENGINE, CATALOG, rows, uid, at, "Europe/Moscow", allowed=remaining)
-        if not prediction or not prediction["items"]:
-            return None
-        selected = {r["product_id"]: r["quantity"] for r in prediction["items"]}
-        if not selected.keys() <= remaining:
-            raise RuntimeError("Модель вернула SKU за пределами витрины")
-        if items:
-            # Keep the model's ranking and pack counts when completing a short prediction.
-            selected = dict(list(selected.items())[:MIN_BUNDLE_PRODUCTS - len(items)])
-        items.update(selected)
-        remaining = remaining.difference(selected)
-    name = bundle_name(items, names)
-    key = hashlib.sha256(pack([uid, name, items]).encode()).hexdigest()[:24]
-    return dict(id=key, name=name, items=items, total=total(items),
-                model_mode=prediction["mode"], history_orders=prediction["history_orders"])
-
-
-def generate(uid, rows, excluded=()):
-    return predict_pair(uid, model_orders(rows), now().isoformat(), excluded)
-
-
-def predict_pair(uid, rows, at, excluded=()):
-    result = []
-    available = set(CATALOG).difference(excluded)
-    for _ in range(2):
-        bundle = predict_bundle(uid, rows, available, at, {b["name"] for b in result})
-        if not bundle:
-            break
-        result.append(bundle)
-        available.difference_update(bundle["items"])
-    return result if len(result) == 2 else []
-
-
-def build_pages(uid, rows):
+def build_pages(uid, rows, excluded=()):
     rows = model_orders(rows)
-    at = now().isoformat()
-    first = predict_pair(uid, rows, at)
-    pages = [first]
-    if not first:
-        return pages
-    seen = {frozenset(b["items"]) for b in first}
-    candidates = []
-    # The same predictor selects items and quantities in each shelf. Removing
-    # one of its choices at a time yields its next-best alternatives.
-    for tags in THEMES.values():
-        shelf = frozenset(sku for sku, p in PRODUCTS.items() if p["image"] in tags.split())
-        queue = deque([shelf])
-        visited = {shelf}
-        while queue:
-            available = queue.popleft()
-            bundle = predict_bundle(uid, rows, available, at, set())
-            if not bundle:
+    if not rows:
+        return [[]]
+    zone = ZoneInfo("Europe/Moscow")
+    at = now().astimezone(zone)
+    history = History()
+    supports = Counter()
+    recent = Counter()
+    bought_together = Counter()
+    role_pairs = Counter()
+    for row in sorted(rows, key=lambda r: (r["ordered_at"], r["order_id"])):
+        ordered = datetime.fromisoformat(row["ordered_at"]).astimezone(zone)
+        if ordered >= at:
+            continue
+        history.add(Order(row["order_id"], uid, ordered, row["items"], row["total_rub"]), CATALOG)
+        bought_together.update(combinations(sorted(row["items"]), 2))
+        roles = {role for sku in row["items"] for role in meal_roles(sku)}
+        role_pairs.update(combinations(sorted(roles), 2))
+        age = (at - ordered).total_seconds() / 86400
+        for title, slots in MEALS.items():
+            if set(slots) <= roles:
+                supports[title] += 1
+                recent[title] += 1 / (1 + age / 7)
+    if not history.orders:
+        return [[]]
+
+    available = set(history.sku).difference(excluded)
+    ranked = ENGINE.base.ranked(history, at, allowed=available)
+    prediction = ENGINE.predict(history, at)
+    preferred = {row["product_id"] for row in prediction["items"]}
+    by_role = defaultdict(list)
+    scores = {}
+    for rank, (item, _) in enumerate(ranked):
+        sku = item.id
+        scores[sku] = 1 / (1 + rank / 8) + (sku in preferred)
+        for role in meal_roles(sku):
+            by_role[role].append(sku)
+
+    candidates = {}
+    for title, slots in MEALS.items():
+        # A shopper may buy a main with a drink one day and with a snack another.
+        anchor_support = min(role_pairs[tuple(sorted((slots[0], side)))] for side in slots[1:])
+        if not supports[title] and anchor_support < 2:
+            continue
+        pools = [sorted(by_role[role], key=scores.get, reverse=True)[:8] for role in slots]
+        for skus in product(*pools):
+            key = frozenset(skus)
+            if len(key) != len(slots):
                 continue
-            contents = frozenset(bundle["items"])
-            if len(contents) >= 2 and contents not in seen:
-                candidates.append((contents, bundle))
-                seen.add(contents)
-            if len(shelf) - len(available) < 3:
-                for sku in sorted(contents):
-                    subset = available - {sku}
-                    if len(subset) >= 2 and subset not in visited:
-                        visited.add(subset)
-                        queue.append(subset)
+            support = [bought_together[pair] for pair in combinations(sorted(skus), 2)]
+            if not any(support):
+                continue
+            score = (.35 * sum(log1p(count) for count in support) + sum(scores[k] for k in skus) / len(skus)
+                     + log1p(recent[title]) + .15 * log1p(supports[title]))
+            if key not in candidates or candidates[key][0] < score:
+                candidates[key] = (score, title, skus)
 
-    # Broader alternatives keep a narrow theme from forcing very small baskets.
-    excluded = set()
-    for _ in range(10):
-        pair = predict_pair(uid, rows, at, excluded)
-        if not pair:
-            break
-        for bundle in pair:
-            contents = frozenset(bundle["items"])
-            excluded.update(contents)
-            if contents not in seen:
-                candidates.append((contents, bundle))
-                seen.add(contents)
-
-    typical_order = sum(order["total_rub"] for order in rows) / len(rows)
-    purchases = Counter(sku for order in rows for sku in order["items"])
-    exposure = Counter(sku for b in first for sku in b["items"])
-    while len(candidates) >= 2:
-        previous = {sku for bundle in pages[-1] for sku in bundle["items"]}
-
-        def priority(candidate):
-            items, bundle = candidate
-            distance = abs(bundle["total"] - typical_order)
-            return (distance > typical_order * 0.25,
-                    len(items & previous), sum(exposure[s] for s in items) / len(items),
-                    -sum(purchases[s] for s in items) / len(items), distance)
-
-        ranked = sorted(candidates, key=priority)
-        for index, left in enumerate(ranked):
-            right = next((other for other in ranked[index + 1:]
-                          if left[0].isdisjoint(other[0])), None)
-            if right is not None:
+    ranked_sets = sorted(candidates, key=lambda k: (-candidates[k][0], candidates[k][2]))
+    pages = []
+    exposure = Counter()
+    while len(ranked_sets) >= 2 and len(pages) < 32:
+        ranked_sets.sort(key=lambda k: sum(exposure[i] for i in k) * .4 - candidates[k][0])
+        for index, left in enumerate(ranked_sets):
+            choices = [k for k in ranked_sets[index+1:] if k.isdisjoint(left)]
+            if choices:
+                right = next((k for k in choices if candidates[k][1] != candidates[left][1]), choices[0])
                 break
         else:
             break
+        page = []
+        for key in (left, right):
+            _, name, skus = candidates[key]
+            items = {k: ENGINE.base.quantity(CATALOG[k], history, 3) for k in skus}
+            ident = hashlib.sha256(pack([uid, name, items]).encode()).hexdigest()[:24]
+            page.append(dict(id=ident, name=name, items=items, total=total(items),
+                             history_orders=history.orders, model_mode=prediction.get("mode", "history")))
+            exposure.update(skus)
+            ranked_sets.remove(key)
+        pages.append(page)
+    return pages or [[]]
 
-        for candidate in (left, right):
-            candidates.remove(candidate)
-            exposure.update(candidate[0])
-        pages.append([left[1], right[1]])
-    return pages
+
+def generate(uid, rows, excluded=()):
+    return build_pages(uid, rows, excluded)[0]

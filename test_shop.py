@@ -1,4 +1,5 @@
 """Regression checks for the v4 adapter, persistent cart and experiment log."""
+from itertools import permutations
 import csv
 import io
 import tempfile
@@ -30,6 +31,32 @@ class ShopTest(unittest.TestCase):
         self.enterContext(patch.object(store, "now", side_effect=lambda:
             anchor + timedelta(seconds=monotonic() - started)))
         store.initialize()
+        self.counts = {u["id"]:len(app.orders(u["id"])) for u in store.PROFILES}
+        self.assertTrue(all(n > 50 for n in self.counts.values()))
+
+    def test_annual_history_and_upgrade_preserve_checkout(self):
+        for profile in store.PROFILES:
+            rows = app.orders(profile["id"])
+            dates = [datetime.fromisoformat(row["ordered_at"]) for row in rows]
+            self.assertGreaterEqual((dates[0] - dates[-1]).days, 345)
+            self.assertTrue(all(at < store.now() for at in dates))
+            self.assertTrue(all(row["total_rub"] == store.total(row["items"]) for row in rows))
+            self.assertGreater(len({frozenset(row["items"]) for row in rows}), 20)
+
+        cart = self.start(mode="ordinary")
+        cart = self.change(cart, {next(iter(store.CATALOG)): 1})
+        receipt = app.checkout(cart["id"], app.Checkout(revision=cart["revision"]))
+        with store.database(True) as db:
+            db.execute("DELETE FROM orders WHERE session_id IS NULL")
+            store.save_order(db, "katya-01", "katya", store.now(), cart["items"], None)
+            db.execute("PRAGMA user_version=0")
+        store.initialize()
+        after = app.orders("katya")
+        self.assertIn(receipt["id"], [row["order_id"] for row in after])
+        self.assertNotIn("katya-01", [row["order_id"] for row in after])
+        self.assertEqual(len(after), self.counts["katya"] + 1)
+        store.initialize()
+        self.assertEqual(app.orders("katya"), after)
 
     def start(self, uid="katya", mode="personal"):
         return app.begin(uid, app.Start(mode=mode))
@@ -46,7 +73,7 @@ class ShopTest(unittest.TestCase):
             self.assertFalse(bundles[0]["items"].keys() & bundles[1]["items"].keys())
             signatures.add(tuple(sorted(bundles[0]["items"])))
             for b in bundles:
-                self.assertEqual(b["history_orders"], 10)
+                self.assertEqual(b["history_orders"], self.counts[u["id"]])
                 self.assertEqual(b["total"], store.total(b["items"]))
                 for sku in b["items"]:
                     self.assertEqual(store.PRODUCTS[sku]["price"], store.CATALOG[sku].price)
@@ -82,7 +109,7 @@ class ShopTest(unittest.TestCase):
         model_order = store.model_orders([order])[0]
         self.assertEqual(model_order["items"], {carrot["id"]: 2})
         self.assertEqual(model_order["total_rub"], carrot["price"] * 2)
-        self.assertEqual(app.recommendations(self.start()["id"])[0]["history_orders"], 11)
+        self.assertEqual(app.recommendations(self.start()["id"])[0]["history_orders"], self.counts["katya"] + 1)
 
     def test_refresh_offers_new_products_without_changing_cart_or_history(self):
         for user in app.users():
@@ -95,7 +122,7 @@ class ShopTest(unittest.TestCase):
                 self.assertEqual(len(refreshed), 2)
                 for b in refreshed:
                     self.assertFalse(previous.intersection(b["items"]))
-                    self.assertEqual(b["history_orders"], 10)
+                    self.assertEqual(b["history_orders"], self.counts[user["id"]])
                 self.assertEqual(cart, app.cart(sid))
                 self.change(cart, refreshed[0]["items"], refreshed[0]["id"])
         ordinary = self.start(mode="ordinary")
@@ -118,6 +145,11 @@ class ShopTest(unittest.TestCase):
                         self.assertEqual(bundle["total"], store.total(bundle["items"]))
                     for bundle in page["bundles"]:
                         self.assertGreaterEqual(len(bundle["items"]), 3)
+                        slots = store.MEALS[bundle["name"]]
+                        self.assertEqual(len(slots), len(bundle["items"]))
+                        self.assertTrue(any(all(role in store.meal_roles(sku)
+                                                for role, sku in zip(slots, order))
+                                            for order in permutations(bundle["items"])))
                         composition = frozenset(bundle["items"])
                         self.assertNotIn(composition, seen)
                         seen.add(composition)
@@ -150,10 +182,10 @@ class ShopTest(unittest.TestCase):
         self.assertEqual(receipt, app.checkout(s["id"], app.Checkout(revision=s["revision"])))
         order = app.orders("katya")[0]
         self.assertEqual((order["items"],order["total_rub"]), (s["items"],s["total"]))
-        self.assertEqual(len(app.orders("katya")), 11)
+        self.assertEqual(len(app.orders("katya")), self.counts["katya"] + 1)
         nxt = self.start()
         self.assertFalse(nxt["items"])
-        self.assertEqual(app.recommendations(nxt["id"])[0]["history_orders"], 11)
+        self.assertEqual(app.recommendations(nxt["id"])[0]["history_orders"], self.counts["katya"] + 1)
         events = [e for e in app.metrics() if e["session_id"]==s["id"]]
         self.assertEqual([e["action"] for e in events],
                          ["shopping_started","cart_changed","bundle_edited","bundle_added","checkout"])
@@ -171,8 +203,8 @@ class ShopTest(unittest.TestCase):
         self.assertEqual(self.start()["items"],{})
         self.assertEqual(self.start("ev","ordinary")["items"],{})
         app.checkout(s["id"],app.Checkout(revision=s["revision"]))
-        self.assertEqual(app.recommendations(self.start()["id"])[0]["history_orders"],11)
-        self.assertEqual(len(app.orders("ev")),10)
+        self.assertEqual(app.recommendations(self.start()["id"])[0]["history_orders"], self.counts["katya"] + 1)
+        self.assertEqual(len(app.orders("ev")),self.counts["ev"])
 
     def test_stale_edits_and_invalid_cart_are_atomic(self):
         s=self.start()
@@ -190,7 +222,7 @@ class ShopTest(unittest.TestCase):
         empty=self.change(updated,{})
         with self.assertRaises(ShopError):
             app.checkout(s["id"],app.Checkout(revision=empty["revision"]))
-        self.assertEqual(len(app.orders("katya")),10)
+        self.assertEqual(len(app.orders("katya")),self.counts["katya"])
 
     def test_new_purchases_change_predicted_products(self):
         user = "dima"
@@ -203,7 +235,7 @@ class ShopTest(unittest.TestCase):
             cart = self.change(self.start(user, "ordinary"), new_items)
             app.checkout(cart["id"], app.Checkout(revision=cart["revision"]))
         updated = app.recommendations(personal["id"])[0]
-        self.assertEqual(updated["history_orders"], 14)
+        self.assertEqual(updated["history_orders"], self.counts[user] + 4)
         self.assertTrue(updated["items"].keys() & new_items.keys())
 
     def test_offer_is_bound_to_user_and_mode(self):

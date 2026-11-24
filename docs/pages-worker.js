@@ -26,7 +26,7 @@ function snapshot(db, data) {
 async function start() {
   const indexURL = new URL("python/", self.location.href).href;
   const [py, db, response] = await Promise.all([
-    loadPyodide({indexURL}), openStorage(), fetch("shop-engine.zip?v=pairs-4", {cache:"no-cache"})
+    loadPyodide({indexURL}), openStorage(), fetch("shop-engine.zip?v=meals-1", {cache:"no-cache"})
   ]);
   if (!response.ok) throw new Error("Не удалось загрузить модель");
   await py.loadPackage(["sqlite3", "tzdata"]);
@@ -50,14 +50,17 @@ async function handle({method, path, body}) {
   // Every tab restores the latest committed SQLite image while holding the same lock.
   return navigator.locks.request(siteKey, async () => {
     const saved = await snapshot(db);
+    let migrated = false;
     if (saved) {
       py.FS.writeFile(dbFile, saved);
+      migrated = py.runPython("store.needs_history_update()");
+      if (migrated) py.runPython("store.initialize()");
     } else {
       if (py.FS.analyzePath(dbFile).exists) py.FS.unlink(dbFile);
       py.runPython("store.initialize()");
     }
     const result = call();
-    if (!saved || (!result.error && (method !== "GET" || path.endsWith("/recommendations/page")))) {
+    if (!saved || migrated || (!result.error && (method !== "GET" || path.endsWith("/recommendations/page")))) {
       await snapshot(db, py.FS.readFile(dbFile));
     }
     return result;

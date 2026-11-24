@@ -3,169 +3,18 @@
     "id": "katya",
     "name": "Екатерина",
     "occupation": "Мама двоих детей",
-    "habit": "Берёт продукты для завтрака всей семьи.",
-    "orders": [
-      {
-        "ax-06491e8110dffddd": 2,
-        "iz-ekvadora-banany-4-sht-400-900-g": 1,
-        "kasha-molochnaya-samokat-ovsyanaya-tselnozernovaya-250-g": 1
-      },
-      {
-        "ax-2053555ce80ab005": 1,
-        "yabloki-golden-500-g": 1,
-        "ax-33bd43ae29341205": 1,
-        "ax-06491e8110dffddd": 1
-      },
-      {
-        "kartofel-zhniva-otbornyy-mytyy-2-5-kg": 1,
-        "salatnyy-miks-belaya-dacha-toskana-frisse-romano-radichcho-140-g": 1,
-        "ax-1467e2d86b567533": 1
-      },
-      {
-        "kasha-molochnaya-samokat-ovsyanaya-tselnozernovaya-250-g": 1,
-        "ax-06491e8110dffddd": 1,
-        "iz-ekvadora-banany-4-sht-400-900-g": 1
-      },
-      {
-        "ax-eee364ab91d62663": 1,
-        "baton-cheryomushki-nareznoy-narezka-400-g": 1,
-        "ax-06491e8110dffddd": 1
-      },
-      {
-        "ax-2053555ce80ab005": 1,
-        "iz-ekvadora-banany-4-sht-400-900-g": 1,
-        "ax-33bd43ae29341205": 1
-      },
-      {
-        "ax-06491e8110dffddd": 2,
-        "ax-eee364ab91d62663": 1,
-        "baton-cheryomushki-nareznoy-narezka-400-g": 1
-      },
-      {
-        "kartofel-zhniva-otbornyy-mytyy-2-5-kg": 1,
-        "ax-549bcb0a99b6c147": 1,
-        "ax-1467e2d86b567533": 1
-      },
-      {
-        "kasha-molochnaya-samokat-ovsyanaya-tselnozernovaya-250-g": 1,
-        "iz-ekvadora-banany-4-sht-400-900-g": 1,
-        "ax-06491e8110dffddd": 1
-      },
-      {
-        "ax-33bd43ae29341205": 1,
-        "yabloki-golden-500-g": 1,
-        "ax-2053555ce80ab005": 1
-      }
-    ]
+    "habit": "Берёт продукты для завтрака всей семьи."
   },
   {
     "id": "ev",
     "name": "Евгений",
     "occupation": "Разработчик",
-    "habit": "Покупает кофе и готовые обеды в перерыве между встречами.",
-    "orders": [
-      {
-        "sendvich-subjoy-ostryy-italyanskiy-220-g": 1,
-        "ax-07830bc33eee353f": 1
-      },
-      {
-        "ax-de8f010aa037a9d2": 1,
-        "kola-samokat-bez-sakhara-s-gazom-2-l": 1,
-        "salatnyy-miks-belaya-dacha-toskana-frisse-romano-radichcho-140-g": 1
-      },
-      {
-        "ax-07830bc33eee353f": 1,
-        "ax-622376dbf71091f5": 1,
-        "ax-06491e8110dffddd": 1
-      },
-      {
-        "sendvich-subjoy-ostryy-italyanskiy-220-g": 1,
-        "ax-2e7f19641a426b25": 1,
-        "smes-orekhov-semushka-solyonaya-s-pekanom-50-g": 1
-      },
-      {
-        "ax-de8f010aa037a9d2": 1,
-        "ax-1467e2d86b567533": 1,
-        "salatnyy-miks-belaya-dacha-toskana-frisse-romano-radichcho-140-g": 1
-      },
-      {
-        "ax-07830bc33eee353f": 1,
-        "sendvich-subjoy-ostryy-italyanskiy-220-g": 1,
-        "smes-orekhov-semushka-solyonaya-s-pekanom-50-g": 1
-      },
-      {
-        "ax-07830bc33eee353f": 1,
-        "ax-622376dbf71091f5": 1
-      },
-      {
-        "ax-de8f010aa037a9d2": 1,
-        "kola-samokat-bez-sakhara-s-gazom-2-l": 1
-      },
-      {
-        "ax-07830bc33eee353f": 1,
-        "sendvich-subjoy-ostryy-italyanskiy-220-g": 1,
-        "ax-2e7f19641a426b25": 1
-      },
-      {
-        "sendvich-subjoy-ostryy-italyanskiy-220-g": 1,
-        "smes-orekhov-semushka-solyonaya-s-pekanom-50-g": 1,
-        "ax-07830bc33eee353f": 1
-      }
-    ]
+    "habit": "Покупает кофе и готовые обеды в перерыве между встречами."
   },
   {
     "id": "dima",
     "name": "Дима",
     "occupation": "Студент",
-    "habit": "Забегает за лапшой после пар и берёт снеки к кино.",
-    "orders": [
-      {
-        "ax-1416b14c0e7444f4": 1,
-        "chipsy-lay-s-syr-140-g": 1,
-        "kola-samokat-bez-sakhara-s-gazom-2-l": 1
-      },
-      {
-        "popkorn-holy-corn-dlya-svch-nezhnyy-syr-70-g": 1,
-        "kola-samokat-bez-sakhara-s-gazom-2-l": 1,
-        "shokoladnyy-batonchik-snickers-super-80-g": 1
-      },
-      {
-        "ax-de8f010aa037a9d2": 1,
-        "kola-samokat-bez-sakhara-s-gazom-2-l": 1,
-        "chipsy-lay-s-syr-140-g": 1
-      },
-      {
-        "ax-1416b14c0e7444f4": 1,
-        "ax-2e7f19641a426b25": 1
-      },
-      {
-        "chipsy-lay-s-syr-140-g": 1,
-        "shokoladnyy-batonchik-snickers-super-80-g": 1,
-        "kola-samokat-bez-sakhara-s-gazom-2-l": 1
-      },
-      {
-        "ax-1416b14c0e7444f4": 2,
-        "smes-orekhov-semushka-solyonaya-s-pekanom-50-g": 1
-      },
-      {
-        "ax-de8f010aa037a9d2": 1,
-        "chipsy-lay-s-syr-140-g": 1,
-        "kola-samokat-bez-sakhara-s-gazom-2-l": 1
-      },
-      {
-        "popkorn-holy-corn-dlya-svch-nezhnyy-syr-70-g": 1,
-        "shokoladnyy-batonchik-snickers-super-80-g": 1
-      },
-      {
-        "ax-1416b14c0e7444f4": 1,
-        "kola-samokat-bez-sakhara-s-gazom-2-l": 1,
-        "chipsy-lay-s-syr-140-g": 1
-      },
-      {
-        "kola-samokat-bez-sakhara-s-gazom-2-l": 1,
-        "popkorn-holy-corn-dlya-svch-nezhnyy-syr-70-g": 1,
-        "chipsy-lay-s-syr-140-g": 1
-      }
-    ]
+    "habit": "Забегает за лапшой после пар и берёт снеки к кино."
   }
 ]
