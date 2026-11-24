@@ -69,7 +69,10 @@ function syncVisit() {
 }
 document.addEventListener("visibilitychange",syncVisit);
 window.addEventListener("pagehide",stopVisit);
-window.addEventListener("pageshow",syncVisit);
+window.addEventListener("pageshow",event=>{
+  if (event.persisted) location.reload();
+  else syncVisit();
+});
 setInterval(reportVisit,15000);
 async function enter(user, mode) {
   const session=await api("/api/users/"+user+"/sessions","POST",{mode});
@@ -91,6 +94,7 @@ function route(page, replace=false) {
   render(); syncVisit(); window.scrollTo(0,0);
 }
 function navBar() {
+  if (!S.session) return "";
   if (S.route === "home" || S.route === "catalog") {
     const cartLabel = S.session.total ? money(S.session.total) : "";
     return '<nav class="home-dock" aria-label="Основная навигация">'+
@@ -240,8 +244,11 @@ function profilePage() {
       Object.entries(o.items).map(([k,q])=>'<div class="preview-line"><span>'+esc(product(k).name)+' × '+q+'</span><strong>'+money(o.prices[k]*q)+'</strong></div>').join("")+'</details>').join("")+'</section>';
 }
 function roles() {
-  return '<section class="narrow">'+pageHead("Выберите профиль","profile")+
-    S.users.map(u=>button("switch-user",'<span class="avatar">'+esc(u.name[0])+'</span><span><div class="who">'+esc(u.name)+'</div><div class="position">'+esc(u.occupation)+'</div><div class="habit">'+esc(u.habit)+'</div></span><span class="arrow">›</span>',"role-card",u.id)).join("")+'</section>';
+  const cards = S.users.map(u=>button("switch-user",'<span class="avatar">'+esc(u.name[0])+'</span><span><div class="who">'+esc(u.name)+'</div><div class="position">'+esc(u.occupation)+'</div><div class="habit">'+esc(u.habit)+'</div></span><span class="arrow">›</span>',"role-card",u.id)).join("");
+  if (!S.session) {
+    return '<dialog id="entry-profile" aria-labelledby="entry-title"><div class="dialog-head"><h2 id="entry-title">Выбор профиля</h2></div>'+cards+'</dialog>';
+  }
+  return '<section class="narrow">'+pageHead("Выберите профиль","profile")+cards+'</section>';
 }
 function pickerRows() {
   const list=searchProducts(S.modal.query,p=>p.available && p.id!==S.modal.sku);
@@ -263,6 +270,7 @@ function render() {
   shop.dataset.route = S.route;
   shop.innerHTML='<main class="page">'+pages[S.route]()+'</main>'+navBar()+(S.modal?picker():"");
   shop.querySelectorAll(".rail").forEach((el,i) => { el.scrollLeft=scroll[i] || 0; });
+  if (!S.session) $("#entry-profile").showModal();
   if (S.modal) $("#picker").showModal();
 }
 function setQty(items,sku,q) {
@@ -292,8 +300,9 @@ async function run(a,id) {
   }
   if(a==="mode" || a==="switch-user") {
     if(a==="mode" && id===S.mode) return;
+    const firstEntry = !S.session;
     const dest=S.route==="profile" && a==="mode"?"profile":"home";
-    await enter(a==="switch-user"?id:S.uid,a==="mode"?id:S.mode); return route(dest);
+    await enter(a==="switch-user"?id:S.uid,a==="mode"?id:S.mode); return route(firstEntry && location.hash !== "#roles" ? readRoute() : dest, firstEntry);
   }
   if(a==="refresh-bundles") {
     const control=$('[data-action="refresh-bundles"]');
@@ -376,7 +385,7 @@ document.addEventListener("click",e=>{
     if(e.clientX<r.left || e.clientX>r.right || e.clientY<r.top || e.clientY>r.bottom) guarded(()=>run("close"));
   }
 });
-document.addEventListener("cancel",e=>{if(e.target.id==="picker"){e.preventDefault(); guarded(()=>run("close"));}},true);
+document.addEventListener("cancel",e=>{if(e.target.id==="entry-profile"){e.preventDefault(); return;} if(e.target.id==="picker"){e.preventDefault(); guarded(()=>run("close"));}},true);
 document.addEventListener("input",e=>{
   if(e.target.id==="catalog-search"){S.limit=batch; S.query=e.target.value; $("#results").innerHTML=results();}
   if(e.target.id==="picker-search"){S.modal.limit=batch; S.modal.query=e.target.value; $("#picker-list").innerHTML=pickerRows();}
@@ -391,6 +400,7 @@ function readRoute() {
   return page || "home";
 }
 window.addEventListener("popstate",()=>guarded(async()=>{
+  if (!S.session) return;
   const page=readRoute();
   if(S.receipt && page!=="thanks") await enter(S.uid,S.mode);
   route(page,true);
@@ -400,7 +410,7 @@ async function init() {
   S.limit=batch;
   for(const p of products) p.searchText=norm([p.name,p.category,p.department,p.group,...p.sections].join(" "));
   S.users=users; S.products=new Map(products.map(p=>[p.id,p]));
-  await enter(users.some(u=>u.id===S.uid)?S.uid:users[0].id,S.mode);
-  route(readRoute(),true);
+  S.route="roles";
+  render();
 }
 init().catch(()=>{$("#shop").innerHTML='<div class="loading"><h2>Магазин временно недоступен</h2><p>Обновите страницу и проверьте, разрешено ли браузеру сохранять данные сайта.</p><button class="primary" onclick="location.reload()">Попробовать снова</button></div>';});
