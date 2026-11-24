@@ -1,4 +1,6 @@
 """Local shop data and the adapter to the supplied v4 predictor."""
+from demo_history import annual_orders
+
 import csv
 import hashlib
 import io
@@ -8,7 +10,7 @@ import sqlite3
 import sys
 from collections import Counter, deque
 from contextlib import contextmanager
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from zipfile import ZipFile
 
@@ -19,6 +21,17 @@ from adapter_example import build_engine, read_dataset, recommend
 
 CATALOG, _ = read_dataset(MODEL / "catalog.zip", include_orders=False)
 ENGINE = build_engine(MODEL, CATALOG)
+
+
+class AvailableHistoryPredictor:
+    """Use the existing v4 ranker on the remaining shelf when no routine is due."""
+    def predict(self, history, at, *, allowed, unavailable, size, budget):
+        ranked = ENGINE.base.ranked(history, at, allowed=allowed, unavailable=unavailable)
+        return ENGINE.assemble(history, at, ENGINE.signals(history, ranked),
+                               size=size, budget=budget)
+
+
+HISTORY_ENGINE = AvailableHistoryPredictor()
 
 
 def load_products():
@@ -110,14 +123,24 @@ def initialize():
                 db.execute(statement)
         db.executemany("INSERT OR REPLACE INTO products VALUES (?,?,?)",
                        [(p["id"], p["name"], p["price"]) for p in PRODUCTS.values()])
+        if db.execute("PRAGMA user_version").fetchone()[0] >= 1:
+            return
+        end = now()
         for user in PROFILES:
-            if db.execute("SELECT 1 FROM users WHERE id=?", (user["id"],)).fetchone():
-                continue
-            db.execute("INSERT INTO users VALUES (?,?,?,?)",
+            uid = user["id"]
+            db.execute("INSERT OR IGNORE INTO users VALUES (?,?,?,?)",
                        tuple(user[k] for k in ("id", "name", "occupation", "habit")))
-            for i, items in enumerate(user["orders"]):
-                at = now() - timedelta(days=(len(user["orders"])-i)*2, hours=i%3)
-                save_order(db, f'{user["id"]}-{i+1:02d}', user["id"], at, items, None)
+            db.executemany("DELETE FROM orders WHERE id=? AND user_id=? AND session_id IS NULL",
+                           [(f"{uid}-{i:02d}", uid) for i in range(1, 11)])
+            for at, items in annual_orders(uid, end, PRODUCTS, CATALOG):
+                save_order(db, f"{uid}-year-{at.date()}", uid, at, items, None)
+        db.execute("DELETE FROM recommendation_pages")
+        db.execute("PRAGMA user_version=1")
+
+
+def needs_history_update():
+    with database() as db:
+        return db.execute("PRAGMA user_version").fetchone()[0] < 1
 
 
 def total(items):
@@ -181,6 +204,9 @@ def predict_bundle(uid, rows, available, at, names):
     items = {}
     while len(items) < MIN_BUNDLE_PRODUCTS:
         prediction = recommend(ENGINE, CATALOG, rows, uid, at, "Europe/Moscow", allowed=remaining)
+        # A periodic prediction can be empty outside the routine's purchase window.
+        if prediction and not prediction["items"]:
+            prediction = recommend(HISTORY_ENGINE, CATALOG, rows, uid, at, "Europe/Moscow", allowed=remaining)
         if not prediction or not prediction["items"]:
             return None
         selected = {r["product_id"]: r["quantity"] for r in prediction["items"]}
@@ -194,7 +220,7 @@ def predict_bundle(uid, rows, available, at, names):
     name = bundle_name(items, names)
     key = hashlib.sha256(pack([uid, name, items]).encode()).hexdigest()[:24]
     return dict(id=key, name=name, items=items, total=total(items),
-                model_mode=prediction["mode"], history_orders=prediction["history_orders"])
+                model_mode=prediction.get("mode", "history"), history_orders=prediction["history_orders"])
 
 
 def generate(uid, rows, excluded=()):
